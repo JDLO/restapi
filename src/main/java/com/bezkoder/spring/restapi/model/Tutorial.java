@@ -30,7 +30,7 @@ public class Tutorial {
 	@Column(name = "published")
 	private boolean published;
 	
-	public Tutorial() {}
+//	public Tutorial() {}
 
 	public Tutorial(String title, String description, boolean published) {
 		this.title = title;
