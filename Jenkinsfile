@@ -23,21 +23,18 @@ pipeline {
             agent {
                 docker { 
                     image 'maven:3.9-eclipse-temurin-17'
-                    args '-u 0:0 --entrypoint="" -e MAVEN_CONFIG=""'
+                    args '-v $HOME/.m2:/var/maven/.m2 -e MAVEN_CONFIG=""'
+                    reuseNode true
                 }
             }
             steps {
-                sh 'chmod +x mvnw'
-                sh './mvnw clean package -Dmaven.repo.local=/var/maven/.m2'
+                sh 'mvn clean package -Dmaven.repo.local=/var/maven/.m2'
             }
         }
         
         stage('Build & push Docker Image'){
             steps {
-                script {
-					sh 'ls -la target/'
-					sh 'rm -f target/*.original'
-					
+                script {					
 	                withCredentials([[
 	                    $class: 'AmazonWebServicesCredentialsBinding',
 	                    credentialsId: 'aws-credentials-id',
@@ -60,25 +57,18 @@ pipeline {
                 }
             }
         }
+        post {
+	        always {
+	            script {
+	                echo 'Iniciando limpieza profunda para ahorrar espacio...' 
+	                
+	                sh "docker rmi ${IMAGE_REPO_NAME}:${IMAGE_TAG} || true"
+	                sh "docker rmi ${REPOSITORY_URI}:${IMAGE_TAG} || true"
+	                sh "docker rmi ${REPOSITORY_URI}:latest || true"
+	                
+	                sh 'docker image prune -f'
+	            }
+	        }
+    	}
     }
-    post {
-        always {
-            script {
-                echo 'Iniciando limpieza profunda para ahorrar espacio...'
-                
-                // 1. Borrar el Workspace de Jenkins (archivos, target, logs)
-                cleanWs() 
-                
-                // 2. Borrar la imagen Docker recién creada del registro local
-                // Para que no se acumulen versiones viejas en el disco de la EC2
-                sh "docker rmi ${IMAGE_REPO_NAME}:${IMAGE_TAG} || true"
-                sh "docker rmi ${REPOSITORY_URI}:${IMAGE_TAG} || true"
-                sh "docker rmi ${REPOSITORY_URI}:latest || true"
-                
-                // 3. Limpieza de imágenes "huérfanas" (dangling images)
-                // Borra capas intermedias que quedaron sin uso
-                sh 'docker image prune -f'
-            }
-        }
-	}
 }
