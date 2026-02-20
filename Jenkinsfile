@@ -23,7 +23,7 @@ pipeline {
             agent {
                 docker { 
                     image 'maven:3.9-eclipse-temurin-17'
-                    args '-v $HOME/.m2:/var/maven/.m2 -e MAVEN_CONFIG=""'
+                    args '-v ${WORKSPACE}/.m2:/var/maven/.m2 -e MAVEN_CONFIG=/var/maven/.m2'
                     reuseNode true
                 }
             }
