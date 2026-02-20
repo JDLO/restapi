@@ -57,18 +57,18 @@ pipeline {
                 }
             }
         }
-        post {
-	        always {
-	            script {
-	                echo 'Iniciando limpieza profunda para ahorrar espacio...' 
-	                
-	                sh "docker rmi ${IMAGE_REPO_NAME}:${IMAGE_TAG} || true"
-	                sh "docker rmi ${REPOSITORY_URI}:${IMAGE_TAG} || true"
-	                sh "docker rmi ${REPOSITORY_URI}:latest || true"
-	                
-	                sh 'docker image prune -f'
-	            }
-	        }
-    	}
     }
+    post {
+        always {
+            script {
+                echo 'Iniciando limpieza profunda para ahorrar espacio...' 
+                
+                sh "docker rmi ${IMAGE_REPO_NAME}:${IMAGE_TAG} || true"
+                sh "docker rmi ${REPOSITORY_URI}:${IMAGE_TAG} || true"
+                sh "docker rmi ${REPOSITORY_URI}:latest || true"
+                
+                sh 'docker image prune -f'
+            }
+        }
+	}
 }
