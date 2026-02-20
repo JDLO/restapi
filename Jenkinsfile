@@ -25,14 +25,13 @@ pipeline {
             steps {
                 sh 'chmod +x mvnw'
                 sh './mvnw clean package -Dmaven.repo.local=/var/maven/.m2'
-                sh ''
             }
         }
         
         stage('Build & push Docker Image'){
             steps {
                 script {
-					sh 'rm -f target/*.jar.original'
+					sh 'rm -f target/*.original'
 					
 	                withCredentials([[
 	                    $class: 'AmazonWebServicesCredentialsBinding',
