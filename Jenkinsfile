@@ -1,4 +1,8 @@
 pipeline {
+	options {
+        // Solo guarda los últimos 5 builds y borra los artefactos de los antiguos
+        buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '5'))
+    }
     agent any
     environment {
         AWS_ACCOUNT_ID = '595575695437'
@@ -19,7 +23,7 @@ pipeline {
             agent {
                 docker { 
                     image 'maven:3.9-eclipse-temurin-17'
-                    args '-v $HOME/.m2:/var/maven/.m2 -e MAVEN_CONFIG=""'
+                    args '-u 0:0 --entrypoint="" -e MAVEN_CONFIG=""'
                 }
             }
             steps {
@@ -31,6 +35,7 @@ pipeline {
         stage('Build & push Docker Image'){
             steps {
                 script {
+					sh 'ls -la target/'
 					sh 'rm -f target/*.original'
 					
 	                withCredentials([[
@@ -55,5 +60,25 @@ pipeline {
                 }
             }
         }
+        post {
+	        always {
+	            script {
+	                echo 'Iniciando limpieza profunda para ahorrar espacio...'
+	                
+	                // 1. Borrar el Workspace de Jenkins (archivos, target, logs)
+	                cleanWs() 
+	                
+	                // 2. Borrar la imagen Docker recién creada del registro local
+	                // Para que no se acumulen versiones viejas en el disco de la EC2
+	                sh "docker rmi ${IMAGE_REPO_NAME}:${IMAGE_TAG} || true"
+	                sh "docker rmi ${REPOSITORY_URI}:${IMAGE_TAG} || true"
+	                sh "docker rmi ${REPOSITORY_URI}:latest || true"
+	                
+	                // 3. Limpieza de imágenes "huérfanas" (dangling images)
+	                // Borra capas intermedias que quedaron sin uso
+	                sh 'docker image prune -f'
+	            }
+	        }
+    	}
     }
 }
