@@ -60,25 +60,25 @@ pipeline {
                 }
             }
         }
-        post {
-	        always {
-	            script {
-	                echo 'Iniciando limpieza profunda para ahorrar espacio...'
-	                
-	                // 1. Borrar el Workspace de Jenkins (archivos, target, logs)
-	                cleanWs() 
-	                
-	                // 2. Borrar la imagen Docker recién creada del registro local
-	                // Para que no se acumulen versiones viejas en el disco de la EC2
-	                sh "docker rmi ${IMAGE_REPO_NAME}:${IMAGE_TAG} || true"
-	                sh "docker rmi ${REPOSITORY_URI}:${IMAGE_TAG} || true"
-	                sh "docker rmi ${REPOSITORY_URI}:latest || true"
-	                
-	                // 3. Limpieza de imágenes "huérfanas" (dangling images)
-	                // Borra capas intermedias que quedaron sin uso
-	                sh 'docker image prune -f'
-	            }
-	        }
-    	}
     }
+    post {
+        always {
+            script {
+                echo 'Iniciando limpieza profunda para ahorrar espacio...'
+                
+                // 1. Borrar el Workspace de Jenkins (archivos, target, logs)
+                cleanWs() 
+                
+                // 2. Borrar la imagen Docker recién creada del registro local
+                // Para que no se acumulen versiones viejas en el disco de la EC2
+                sh "docker rmi ${IMAGE_REPO_NAME}:${IMAGE_TAG} || true"
+                sh "docker rmi ${REPOSITORY_URI}:${IMAGE_TAG} || true"
+                sh "docker rmi ${REPOSITORY_URI}:latest || true"
+                
+                // 3. Limpieza de imágenes "huérfanas" (dangling images)
+                // Borra capas intermedias que quedaron sin uso
+                sh 'docker image prune -f'
+            }
+        }
+	}
 }

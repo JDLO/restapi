@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Paso 3: Copiar el .jar que generó Maven en la etapa anterior del pipeline
 # El asterisco ayuda si el nombre tiene la versión (ej: api-0.0.1-SNAPSHOT.jar)
-COPY target/*[!original].jar app.jar
+COPY target/*.jar app.jar
 
 # Paso 4: Exponer el puerto que usa Spring Boot (normalmente 8080)
 EXPOSE 8080
