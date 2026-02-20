@@ -15,23 +15,16 @@ pipeline {
             }
         }
 		
-        stage('Preparate'){
-            steps{
+        stage('Java Build & Test') {
+            agent {
+                docker { 
+                    image 'maven:3.9-eclipse-temurin-17'
+                    args '-v $HOME/.m2:/var/maven/.m2 -e MAVEN_CONFIG=/var/maven/.m2'
+                }
+            }
+            steps {
                 sh 'chmod +x mvnw'
-            }
-        }
-
-        stage('Unit Tests') {
-            steps {
-                // Ejecuta los tests de Spring Boot
-                sh './mvnw clean test'
-            }
-        }
-
-        stage('Build Artifact') {
-            steps {
-                // Crea el JAR omitiendo tests ya realizados
-                sh './mvnw package -DskipTests'
+                sh './mvnw clean package'
             }
         }
         
