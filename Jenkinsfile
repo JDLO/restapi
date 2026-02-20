@@ -19,12 +19,12 @@ pipeline {
             agent {
                 docker { 
                     image 'maven:3.9-eclipse-temurin-17'
-                    args '-v $HOME/.m2:/var/maven/.m2 -e MAVEN_CONFIG=/var/maven/.m2'
+                    args '-v $HOME/.m2:/var/maven/.m2'
                 }
             }
             steps {
                 sh 'chmod +x mvnw'
-                sh './mvnw clean package'
+                sh './mvnw clean package -Dmaven.repo.local=/var/maven/.m2'
             }
         }
         
